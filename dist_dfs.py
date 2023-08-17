@@ -26,11 +26,11 @@ def _third_term(
     return ((A**2).sum(axis=1).reshape(dim2, 1) * np.ones(shape=(dim2, dim1))).T
 
 
-def dist_dfs(
+def _dist_dfs(
     df_left: pd.DataFrame,
     df_right: pd.DataFrame,
     cols: List[str],
-) -> pd.DataFrame:
+) -> np.ndarray:
     left_len, _ = df_left.shape
     right_len, _ = df_right.shape
     col_len = len(cols)
@@ -56,3 +56,30 @@ def dist_dfs(
     )
 
     return first_term + second_term + third_term
+
+
+def dist_dfs(
+    df_left: pd.DataFrame,
+    df_right: pd.DataFrame,
+    cols: List[str],
+) -> pd.DataFrame:
+    scores = _dist_dfs(df_left=df_left, df_right=df_right, cols=cols)
+    scores_df = pd.DataFrame(scores)
+    return scores_df
+
+
+def dist_dfs_chunk(
+    df_left: pd.DataFrame, df_right: pd.DataFrame, cols: List[str], chunk_size: int
+) -> pd.DataFrame:
+    scores = []
+    for chunk in np.array_split(df_left, chunk_size):
+        scores.append(
+            _dist_dfs(
+                df_left=chunk,
+                df_right=df_right,
+                cols=cols,
+            )
+        )
+
+    scores_df = pd.DataFrame(np.concatenate(scores))
+    return scores_df
